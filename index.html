@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>Printer Triage — Incident Intake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light only;
+  --bg:#EFEBFF;
+  --card:#FFFFFF;
+  --soft:#F7F5FF;
+  --ink:#2B2340;
+  --muted:#7A7194;
+  --line:#2B2340;
+  --violet:#6C5CE7;
+  --down:#FF5E5B;
+  --degraded:#FFB020;
+  --cosmetic:#2FBF7E;
+  --shadow:4px 4px 0 var(--ink);
+  --shadow-sm:3px 3px 0 var(--ink);
+  --display:"Fredoka",system-ui,sans-serif;
+  --sans:"Nunito",system-ui,-apple-system,sans-serif;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{background:#EFEBFF}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(var(--card) 1.6px, transparent 1.7px);
+  background-size:22px 22px;
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  font-weight:600;
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:840px;margin:0 auto;padding:0 16px 110px}
+
+/* ---------- masthead ---------- */
+header.mast{
+  display:flex;align-items:center;gap:16px;
+  background:var(--card);
+  border:3px solid var(--ink);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+  padding:16px 20px;
+  margin:22px 0 20px;
+}
+header.mast svg{flex:0 0 auto;width:70px;height:70px}
+.mast h1{
+  font-family:var(--display);font-weight:700;
+  font-size:clamp(24px,6vw,36px);
+  line-height:1.02;letter-spacing:-0.01em;margin:0;
+  color:var(--ink);
+}
+.mast h1 em{font-style:normal;color:var(--violet)}
+.mast .sub{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  margin-top:6px;
+}
+@media (max-width:520px){
+  header.mast{gap:13px;padding:14px 16px}
+  header.mast svg{width:54px;height:54px}
+}
+
+/* ---------- tabs ---------- */
+nav.tabs{display:flex;gap:10px;margin-bottom:26px}
+nav.tabs button{
+  appearance:none;cursor:pointer;
+  font-family:var(--display);font-size:15px;font-weight:600;
+  padding:10px 20px;border-radius:999px;
+  border:3px solid var(--ink);background:var(--card);color:var(--ink);
+  box-shadow:var(--shadow-sm);
+  transition:transform .1s ease, box-shadow .1s ease;
+}
+nav.tabs button[aria-selected="true"]{background:var(--violet);color:#fff}
+nav.tabs button:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+nav.tabs button:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+
+/* ---------- blocks ---------- */
+section.block{
+  background:var(--card);
+  border:3px solid var(--ink);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+  padding:20px 20px 22px;
+  margin:0 0 22px;
+}
+.block > h2{
+  display:flex;align-items:center;gap:11px;
+  font-family:var(--display);font-weight:600;font-size:21px;
+  margin:0 0 4px;
+}
+.block > h2 .idx{
+  flex:0 0 auto;
+  width:32px;height:32px;border-radius:50%;
+  border:3px solid var(--ink);background:var(--soft);
+  display:grid;place-items:center;
+  font-family:var(--display);font-size:14px;font-weight:700;
+}
+.block > .hint{
+  font-size:14px;font-weight:600;color:var(--muted);
+  margin:0 0 16px;padding-left:43px;
+}
+@media (max-width:560px){ .block > .hint{padding-left:0} }
+
+.row{display:grid;grid-template-columns:150px 1fr;gap:8px 16px;align-items:start;padding:8px 0}
+.row > label,.row > .lbl{
+  font-family:var(--display);font-size:14px;font-weight:500;
+  color:var(--ink);padding-top:12px;
+}
+@media (max-width:620px){
+  .row{grid-template-columns:1fr;gap:5px;padding:9px 0}
+  .row > label,.row > .lbl{padding-top:0}
+}
+input[type=text],input[type=number],select,textarea{
+  width:100%;
+  font-family:var(--sans);font-size:15px;font-weight:600;
+  color:var(--ink);background:var(--soft);
+  border:3px solid var(--ink);border-radius:14px;
+  padding:11px 13px;
+}
+input::placeholder,textarea::placeholder{color:#A9A2C0;font-weight:600}
+textarea{resize:vertical;min-height:80px;line-height:1.45}
+select{appearance:none;background-image:none}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--violet);outline-offset:2px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ---------- signature: mascot acuity picker ---------- */
+.stubs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stub{
+  appearance:none;cursor:pointer;font-family:inherit;
+  background:var(--soft);
+  border:3px solid var(--ink);border-radius:18px;
+  box-shadow:var(--shadow-sm);
+  padding:14px 10px 15px;text-align:center;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.stub svg{width:60px;height:60px;display:block;margin:0 auto 8px}
+.stub .name{display:block;font-family:var(--display);font-weight:600;font-size:17px}
+.stub .desc{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:3px;line-height:1.3}
+.stub:hover{transform:translateY(-2px)}
+.stub:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.stub:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+.stub[aria-pressed="true"]{background:var(--card);transform:translateY(-2px);box-shadow:5px 5px 0 var(--ink)}
+.stub[data-a="down"][aria-pressed="true"]{background:#FFECEB}
+.stub[data-a="degraded"][aria-pressed="true"]{background:#FFF5E0}
+.stub[data-a="cosmetic"][aria-pressed="true"]{background:#E6F8EF}
+@media (max-width:520px){
+  .stubs{grid-template-columns:1fr}
+  .stub{display:flex;align-items:center;gap:14px;text-align:left;padding:12px 14px}
+  .stub svg{margin:0;width:46px;height:46px}
+}
+
+/* ---------- chips ---------- */
+.chipbar{display:flex;gap:9px}
+.chipbar input{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:700;
+  background:#E7FBF1;color:var(--ink);
+  border:3px solid var(--ink);border-radius:999px;
+  padding:4px 6px 4px 13px;
+}
+.chip.preset{
+  cursor:pointer;background:var(--soft);color:var(--muted);
+  border-style:dashed;padding:5px 13px;font-weight:600;
+}
+.chip.preset:hover,.chip.preset:focus-visible{background:#E7FBF1;color:var(--ink);border-style:solid;outline:none}
+.chip button{
+  appearance:none;border:0;background:none;cursor:pointer;
+  font-size:16px;line-height:1;color:var(--muted);padding:2px 4px;
+}
+.chip button:hover{color:var(--down)}
+.empty-note{font-size:13px;color:var(--muted);margin-top:10px}
+
+/* ---------- buttons ---------- */
+.btn{
+  appearance:none;cursor:pointer;
+  font-family:var(--display);font-size:16px;font-weight:600;
+  padding:12px 22px;border-radius:999px;
+  border:3px solid var(--ink);background:var(--violet);color:#fff;
+  box-shadow:var(--shadow-sm);
+  transition:transform .1s ease, box-shadow .1s ease;
+}
+.btn.ghost{background:var(--card);color:var(--ink)}
+.btn.small{padding:9px 16px;font-size:14px}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+.actions{
+  position:sticky;bottom:0;z-index:10;
+  padding:14px 0 16px;
+  display:flex;gap:11px;align-items:center;flex-wrap:wrap;
+}
+.actions::before{
+  content:"";position:absolute;inset:-6px -16px 0;z-index:-1;
+  background:linear-gradient(to top,var(--bg) 68%,rgba(239,235,255,0));
+}
+.nodecode{
+  font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:auto;
+}
+.nodecode b{
+  color:var(--ink);background:#FFF0C7;
+  border:2px solid var(--ink);border-radius:8px;padding:2px 7px;
+}
+
+/* ---------- records ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+.stat{
+  background:var(--card);border:3px solid var(--ink);border-radius:18px;
+  box-shadow:var(--shadow-sm);padding:14px 15px;
+}
+.stat .n{font-family:var(--display);font-weight:700;font-size:30px;line-height:1}
+.stat .k{font-size:12px;font-weight:700;color:var(--muted);margin-top:5px}
+.saturation{
+  background:#FFF0C7;border:3px solid var(--ink);border-radius:18px;
+  box-shadow:var(--shadow-sm);padding:14px 16px;
+  font-size:14px;margin:0 0 20px;
+}
+.rec{
+  background:var(--card);border:3px solid var(--ink);border-radius:20px;
+  box-shadow:var(--shadow-sm);padding:15px 16px;margin-bottom:13px;
+  display:grid;grid-template-columns:52px 1fr;gap:14px;
+}
+.rec > .face{width:52px;height:52px}
+@media (max-width:520px){ .rec{grid-template-columns:1fr} .rec > .face{width:44px;height:44px} }
+.rec .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.rec .code{
+  font-family:var(--mono);font-size:12px;
+  border:2px solid var(--ink);border-radius:8px;padding:2px 8px;
+}
+.rec[data-a="down"] .code{background:#FFECEB}
+.rec[data-a="degraded"] .code{background:#FFF5E0}
+.rec[data-a="cosmetic"] .code{background:#E6F8EF}
+.rec .when{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.rec .sym{margin:9px 0 0;font-size:15px}
+.rec .meta{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+.rec .ver{display:flex;gap:7px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.rec .ver .vlbl{font-family:var(--display);font-size:13px;color:var(--muted)}
+.vbtn{
+  appearance:none;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:700;
+  border:3px solid var(--ink);background:var(--soft);color:var(--ink);
+  border-radius:999px;padding:5px 13px;
+}
+.vbtn[aria-pressed="true"]{background:var(--cosmetic);color:#fff}
+.vbtn.del{margin-left:auto;border-style:dashed;color:var(--muted)}
+.vbtn.del:hover{color:var(--down);border-color:var(--down)}
+.vbtn:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+
+.blank{
+  background:var(--card);border:3px dashed var(--ink);border-radius:22px;
+  padding:30px 20px;text-align:center;color:var(--muted);font-size:15px;
+}
+.blank svg{width:70px;height:70px;display:block;margin:0 auto 12px}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);
+  background:var(--ink);color:#fff;
+  font-family:var(--display);font-size:15px;
+  padding:12px 22px;border-radius:999px;border:3px solid var(--ink);
+  opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;z-index:60;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hidden{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <span id="mastFace"></span>
+  <div>
+    <h1>Printer <em>Triage</em></h1>
+    <div class="sub">One record per incident · <span id="storeState">checking storage…</span></div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tabIntake" aria-selected="true" aria-controls="panelIntake">New incident</button>
+  <button role="tab" id="tabRecords" aria-selected="false" aria-controls="panelRecords">Records <span id="recCount"></span></button>
+</nav>
+
+<!-- ================= INTAKE ================= -->
+<div id="panelIntake" role="tabpanel" aria-labelledby="tabIntake">
+
+  <section class="block">
+    <h2><span class="idx">1</span> How bad is it?</h2>
+    <p class="hint">Sort before you diagnose. This is how fast it needs a human, not what's wrong with it.</p>
+    <div class="stubs" id="stubs"></div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">2</span> What did you see?</h2>
+    <p class="hint">Describe it before you name a cause. This raw text is what the taxonomy gets built from, so don't tidy it up.</p>
+    <div class="row">
+      <label for="symptomText">In your words</label>
+      <textarea id="symptomText" placeholder="e.g. Third layer onward the left wall pulls away and the head clicks about every 20 seconds"></textarea>
+    </div>
+    <div class="row">
+      <label for="symptomClass">Symptom class</label>
+      <select id="symptomClass">
+        <option value="">— pick one —</option>
+        <option>Won't start / job aborts</option>
+        <option>First layer / bed adhesion</option>
+        <option>Layer defects (shifting, splitting, gaps)</option>
+        <option>Extrusion inconsistency (under, over, stringing)</option>
+        <option>Dimensional accuracy drift</option>
+        <option>Motion, noise, vibration</option>
+        <option>Heating / thermal</option>
+        <option>Electronics, firmware, connectivity</option>
+        <option>Surface finish / cosmetic</option>
+        <option value="__new">Nothing here fits — new class</option>
+      </select>
+    </div>
+    <div class="row hidden" id="newClassRow">
+      <label for="newClass">Name it</label>
+      <input type="text" id="newClass" placeholder="Short, observable, no expertise required">
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">3</span> Machine &amp; job</h2>
+    <p class="hint">Conditions at the time of failure. Without these, a pattern in the data is just noise.</p>
+    <div class="row">
+      <label for="printerId">Printer</label>
+      <div class="pair">
+        <input type="text" id="printerId" placeholder="ID, e.g. P-07">
+        <input type="text" id="printerModel" placeholder="Make / model">
+      </div>
+    </div>
+    <div class="row">
+      <label for="material">Material</label>
+      <div class="pair">
+        <input type="text" id="material" placeholder="e.g. PETG">
+        <input type="text" id="lot" placeholder="Spool / lot no.">
+      </div>
+    </div>
+    <div class="row">
+      <label for="nozzleTemp">Temps (°C)</label>
+      <div class="pair">
+        <input type="number" id="nozzleTemp" placeholder="Nozzle">
+        <input type="number" id="bedTemp" placeholder="Bed">
+      </div>
+    </div>
+    <div class="row">
+      <label for="layerHeight">Layer / nozzle</label>
+      <div class="pair">
+        <input type="text" id="layerHeight" placeholder="Layer height mm">
+        <input type="text" id="nozzleSize" placeholder="Nozzle size mm">
+      </div>
+    </div>
+    <div class="row">
+      <label for="hoursSince">Hours since service</label>
+      <input type="number" id="hoursSince" placeholder="Print hours since last maintenance">
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">4</span> What did you rule out?</h2>
+    <p class="hint">The most valuable field here. Everything you rule out is a branch the next tech never has to walk down.</p>
+    <div class="row">
+      <label for="clearInput">Checked, clear</label>
+      <div>
+        <div class="chipbar">
+          <input type="text" id="clearInput" placeholder="Type a check, hit Enter">
+          <button type="button" class="btn ghost small" id="addClear">Add</button>
+        </div>
+        <div class="chips" id="presetChips"></div>
+        <div class="chips" id="clearChips"></div>
+        <p class="empty-note" id="clearEmpty">Nothing ruled out yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">5</span> What was it?</h2>
+    <p class="hint">Subsystem first, then the specific fault. The node code builds itself from those two.</p>
+    <div class="row">
+      <label for="subsystem">Subsystem</label>
+      <select id="subsystem">
+        <option value="">— pick one —</option>
+        <option value="HOT">Hotend / extruder</option>
+        <option value="MOT">Motion system</option>
+        <option value="BED">Bed / build plate</option>
+        <option value="ELE">Electronics</option>
+        <option value="FRM">Firmware / slicer</option>
+        <option value="MAT">Material / filament</option>
+        <option value="ENV">Environment</option>
+        <option value="UND">Undetermined</option>
+      </select>
+    </div>
+    <div class="row">
+      <label for="faultMode">Fault mode</label>
+      <input type="text" id="faultMode" placeholder="e.g. partial clog, worn PTFE, loose Y belt">
+    </div>
+    <div class="row">
+      <label for="ruledOutRival">Nearest rival cause</label>
+      <input type="text" id="ruledOutRival" placeholder="The other thing this easily could have been">
+    </div>
+    <div class="row">
+      <label for="discTest">Test that decided it</label>
+      <textarea id="discTest" placeholder="The one cheap test that told you it was this and not the rival. This becomes a decision point in the guide."></textarea>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">6</span> Fix &amp; follow-up</h2>
+    <p class="hint">A fix isn't confirmed until the machine proves it. Leave follow-up pending and come back to it from Records.</p>
+    <div class="row">
+      <label for="fix">Fix applied</label>
+      <textarea id="fix" placeholder="What you actually did, in order"></textarea>
+    </div>
+    <div class="row">
+      <label for="minutes">Time &amp; tech</label>
+      <div class="pair">
+        <input type="number" id="minutes" placeholder="Minutes to resolve">
+        <input type="text" id="tech" placeholder="Your initials">
+      </div>
+    </div>
+    <div class="row">
+      <label for="parts">Parts used</label>
+      <input type="text" id="parts" placeholder="Consumables and spares">
+    </div>
+  </section>
+
+  <div class="actions">
+    <button type="button" class="btn" id="saveBtn">Save record</button>
+    <button type="button" class="btn ghost" id="clearForm">Clear form</button>
+    <span class="nodecode">Node code <b id="nodeCode">—</b></span>
+  </div>
+</div>
+
+<!-- ================= RECORDS ================= -->
+<div id="panelRecords" role="tabpanel" aria-labelledby="tabRecords" class="hidden">
+  <div class="stats">
+    <div class="stat"><div class="n" id="sTotal">0</div><div class="k">Records logged</div></div>
+    <div class="stat"><div class="n" id="sCodes">0</div><div class="k">Fault codes seen</div></div>
+    <div class="stat"><div class="n" id="sNew">0</div><div class="k">New in last 10</div></div>
+    <div class="stat"><div class="n" id="sPending">0</div><div class="k">Awaiting follow-up</div></div>
+  </div>
+  <p class="saturation" id="saturationNote"></p>
+
+  <div class="actions" style="position:static;padding:0 0 20px">
+    <button type="button" class="btn ghost small" id="exportCsv">Export CSV</button>
+    <button type="button" class="btn ghost small" id="exportJson">Export JSON</button>
+  </div>
+
+  <div id="recordList"></div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- mascot ---------- */
+var COLORS = { down:"#FF5E5B", degraded:"#FFB020", cosmetic:"#2FBF7E", idle:"#C9C2E4" };
+
+function mascot(state, active){
+  var on = active !== false;
+  var body = on ? "#FFFFFF" : "#F3F1FB";
+  var top = on ? (COLORS[state] || COLORS.idle) : COLORS.idle;
+  var ink = "#2B2340";
+  var face = "";
+
+  if(state === "down"){
+    face =
+      '<path d="M23 33 l6 6 M29 33 l-6 6" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M35 33 l6 6 M41 33 l-6 6" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>' +
+      '<ellipse cx="32" cy="48" rx="5" ry="4" fill="'+ink+'"/>';
+  } else if(state === "degraded"){
+    face =
+      '<circle cx="26" cy="36" r="3" fill="'+ink+'"/>' +
+      '<circle cx="38" cy="36" r="3" fill="'+ink+'"/>' +
+      '<path d="M24 47 q4 -4 8 0 q4 4 8 0" stroke="'+ink+'" stroke-width="3" stroke-linecap="round" fill="none"/>';
+  } else {
+    face =
+      '<circle cx="26" cy="35" r="3" fill="'+ink+'"/>' +
+      '<circle cx="38" cy="35" r="3" fill="'+ink+'"/>' +
+      '<path d="M25 44 q7 8 14 0" stroke="'+ink+'" stroke-width="3" stroke-linecap="round" fill="none"/>';
+  }
+
+  return '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+    '<rect x="6" y="16" width="52" height="42" rx="13" fill="'+body+'" stroke="'+ink+'" stroke-width="3"/>' +
+    '<path d="M6 29 v-0 M6 29 h52" stroke="'+ink+'" stroke-width="3"/>' +
+    '<path d="M9 16 h46 a10 10 0 0 1 3 7 v6 h-52 v-6 a10 10 0 0 1 3 -7z" fill="'+top+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>' +
+    '<rect x="28" y="6" width="8" height="10" rx="3" fill="'+top+'" stroke="'+ink+'" stroke-width="3"/>' +
+    face +
+    '</svg>';
+}
+
+/* ---------- storage adapter ---------- */
+var KEY = "triage:records";
+var memory = {};
+var persistent = !!(window.storage && window.storage.get);
+
+async function loadAll(){
+  if(!persistent) return memory[KEY] || [];
+  try{
+    var r = await window.storage.get(KEY, false);
+    return r && r.value ? JSON.parse(r.value) : [];
+  }catch(e){ return []; }
+}
+async function saveAll(list){
+  if(!persistent){ memory[KEY] = list; return true; }
+  try{ await window.storage.set(KEY, JSON.stringify(list), false); return true; }
+  catch(e){ memory[KEY] = list; return false; }
+}
+
+var records = [];
+var acuity = "";
+var cleared = [];
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---------- toast ---------- */
+var toastTimer;
+function toast(msg){
+  var t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2200);
+}
+
+/* ---------- tabs ---------- */
+function selectTab(which){
+  var intake = which === "intake";
+  $("tabIntake").setAttribute("aria-selected", intake);
+  $("tabRecords").setAttribute("aria-selected", !intake);
+  $("panelIntake").classList.toggle("hidden", !intake);
+  $("panelRecords").classList.toggle("hidden", intake);
+  window.scrollTo(0,0);
+}
+$("tabIntake").addEventListener("click", function(){ selectTab("intake"); });
+$("tabRecords").addEventListener("click", function(){ selectTab("records"); render(); });
+
+/* ---------- acuity picker ---------- */
+var ACUITIES = [
+  { key:"down",      name:"Down",     desc:"Can't print at all" },
+  { key:"degraded",  name:"Degraded", desc:"Prints, but off spec" },
+  { key:"cosmetic",  name:"Cosmetic", desc:"Parts still pass" }
+];
+
+function buildStubs(){
+  var host = $("stubs");
+  host.innerHTML = "";
+  ACUITIES.forEach(function(a){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "stub";
+    b.setAttribute("data-a", a.key);
+    b.setAttribute("aria-pressed", acuity === a.key);
+    b.innerHTML = mascot(a.key, acuity === a.key) +
+      '<span><span class="name">' + a.name + '</span>' +
+      '<span class="desc">' + a.desc + '</span></span>';
+    b.addEventListener("click", function(){
+      acuity = (acuity === a.key) ? "" : a.key;
+      buildStubs();
+      $("mastFace").innerHTML = mascot(acuity || "cosmetic", !!acuity);
+    });
+    host.appendChild(b);
+  });
+}
+
+/* ---------- new symptom class ---------- */
+$("symptomClass").addEventListener("change", function(){
+  var isNew = $("symptomClass").value === "__new";
+  $("newClassRow").classList.toggle("hidden", !isNew);
+  if(isNew) $("newClass").focus();
+});
+
+/* ---------- ruled-out chips ---------- */
+var PRESETS_BY_CLASS = {
+  "First layer / bed adhesion": ["Bed level verified","Z offset verified","Plate cleaned","Bed temp confirmed at sensor"],
+  "Extrusion inconsistency (under, over, stringing)": ["Cold pull done, clear","Extruder gear tension ok","Filament path free","Nozzle diameter verified"],
+  "Layer defects (shifting, splitting, gaps)": ["Belt tension ok","Pulley grubs tight","Rails clean","Part cooling ok"],
+  "Motion, noise, vibration": ["Belt tension ok","Rails lubricated","Frame bolts tight","Stepper current ok"],
+  "Heating / thermal": ["Thermistor resistance ok","Heater cartridge seated","Ambient temp normal","PID tuned"],
+  "Won't start / job aborts": ["G-code re-sliced","SD card reseated","Endstops trigger","Power supply steady"],
+  "Electronics, firmware, connectivity": ["Firmware version confirmed","Cables reseated","Connector continuity ok"],
+  "Dimensional accuracy drift": ["Steps/mm verified","Flow rate verified","Caliper zeroed"],
+  "Surface finish / cosmetic": ["Nozzle wiped","Retraction settings unchanged","Cooling fan at speed"]
+};
+var GENERIC_PRESETS = ["Filament dry","Nozzle not worn","No visible debris","Same job ran clean before"];
+
+function renderPresets(){
+  var list = PRESETS_BY_CLASS[$("symptomClass").value] || GENERIC_PRESETS;
+  var host = $("presetChips");
+  host.innerHTML = "";
+  list.forEach(function(p){
+    if(cleared.indexOf(p) !== -1) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip preset";
+    b.textContent = "+ " + p;
+    b.addEventListener("click", function(){ addClear(p); });
+    host.appendChild(b);
+  });
+}
+$("symptomClass").addEventListener("change", renderPresets);
+
+function renderChips(){
+  var host = $("clearChips");
+  host.innerHTML = "";
+  cleared.forEach(function(c,i){
+    var span = document.createElement("span");
+    span.className = "chip";
+    span.appendChild(document.createTextNode(c));
+    var x = document.createElement("button");
+    x.type = "button";
+    x.setAttribute("aria-label","Remove " + c);
+    x.textContent = "\u00d7";
+    x.addEventListener("click", function(){ cleared.splice(i,1); renderChips(); renderPresets(); });
+    span.appendChild(x);
+    host.appendChild(span);
+  });
+  $("clearEmpty").classList.toggle("hidden", cleared.length > 0);
+}
+function addClear(val){
+  var v = (val !== undefined ? val : $("clearInput").value).trim();
+  if(!v || cleared.indexOf(v) !== -1) return;
+  cleared.push(v);
+  if(val === undefined) $("clearInput").value = "";
+  renderChips(); renderPresets();
+}
+$("addClear").addEventListener("click", function(){ addClear(); });
+$("clearInput").addEventListener("keydown", function(e){
+  if(e.key === "Enter"){ e.preventDefault(); addClear(); }
+});
+
+/* ---------- node code ---------- */
+function slug(s){
+  return s.trim().toUpperCase().replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,22);
+}
+function currentCode(){
+  var sub = $("subsystem").value, fm = $("faultMode").value;
+  if(!sub || !fm.trim()) return "";
+  return sub + "-" + slug(fm);
+}
+function updateCode(){ $("nodeCode").textContent = currentCode() || "\u2014"; }
+$("subsystem").addEventListener("change", updateCode);
+$("faultMode").addEventListener("input", updateCode);
+
+/* ---------- save ---------- */
+function val(id){ return $(id).value.trim(); }
+
+$("saveBtn").addEventListener("click", async function(){
+  if(!acuity){ toast("Pick how bad it is first"); window.scrollTo(0,0); return; }
+  if(!val("symptomText")){ toast("Describe what you saw"); $("symptomText").focus(); return; }
+
+  var cls = $("symptomClass").value;
+  if(cls === "__new") cls = val("newClass") || "Unnamed new class";
+
+  var rec = {
+    id: "R" + Date.now().toString(36).toUpperCase(),
+    logged_at: new Date().toISOString(),
+    acuity: acuity,
+    symptom_text: val("symptomText"),
+    symptom_class: cls,
+    printer_id: val("printerId"),
+    printer_model: val("printerModel"),
+    material: val("material"),
+    lot: val("lot"),
+    nozzle_temp: val("nozzleTemp"),
+    bed_temp: val("bedTemp"),
+    layer_height: val("layerHeight"),
+    nozzle_size: val("nozzleSize"),
+    hours_since_service: val("hoursSince"),
+    checked_clear: cleared.slice(),
+    subsystem: $("subsystem").value,
+    fault_mode: val("faultMode"),
+    node_code: currentCode(),
+    rival_cause: val("ruledOutRival"),
+    discriminating_test: val("discTest"),
+    fix_applied: val("fix"),
+    minutes_to_resolve: val("minutes"),
+    tech: val("tech"),
+    parts_used: val("parts"),
+    verification: "pending"
+  };
+
+  records.unshift(rec);
+  var ok = await saveAll(records);
+  toast(ok ? "Saved " + rec.id : "Saved for this session only");
+  resetForm();
+  render();
+});
+
+function resetForm(){
+  acuity = "";
+  cleared = [];
+  buildStubs();
+  $("mastFace").innerHTML = mascot("cosmetic", true);
+  ["symptomText","newClass","printerId","printerModel","material","lot","nozzleTemp","bedTemp",
+   "layerHeight","nozzleSize","hoursSince","faultMode","ruledOutRival","discTest","fix","minutes","parts","clearInput"]
+    .forEach(function(id){ $(id).value = ""; });
+  $("symptomClass").value = "";
+  $("subsystem").value = "";
+  $("newClassRow").classList.add("hidden");
+  renderChips(); renderPresets(); updateCode();
+  window.scrollTo(0,0);
+}
+$("clearForm").addEventListener("click", function(){
+  if(confirm("Clear everything on this form?")) resetForm();
+});
+
+/* ---------- records ---------- */
+var ACUITY_LABEL = { down:"DOWN", degraded:"DEGRADED", cosmetic:"COSMETIC" };
+
+function render(){
+  $("recCount").textContent = records.length ? "(" + records.length + ")" : "";
+
+  var codes = {};
+  records.forEach(function(r){ if(r.node_code) codes[r.node_code] = true; });
+
+  var older = {};
+  records.slice(10).forEach(function(r){ if(r.node_code) older[r.node_code] = true; });
+  var newInRecent = {};
+  records.slice(0,10).forEach(function(r){ if(r.node_code && !older[r.node_code]) newInRecent[r.node_code] = true; });
+  var newCount = Object.keys(newInRecent).length;
+  var pending = records.filter(function(r){ return r.verification === "pending"; }).length;
+
+  $("sTotal").textContent = records.length;
+  $("sCodes").textContent = Object.keys(codes).length;
+  $("sNew").textContent = newCount;
+  $("sPending").textContent = pending;
+
+  var note = $("saturationNote");
+  if(records.length < 10){
+    note.textContent = "Saturation tracking kicks in at 10 records. Keep logging before you try to draw the tree.";
+  } else if(newCount >= 5){
+    note.textContent = "Still discovering: " + newCount + " of the last 10 incidents introduced a fault code you'd never logged. The taxonomy isn't stable yet.";
+  } else if(newCount >= 2){
+    note.textContent = "Converging: " + newCount + " new fault codes in the last 10. A few gaps left, but the shape is emerging.";
+  } else {
+    note.textContent = "Saturating: " + newCount + " new fault code" + (newCount === 1 ? "" : "s") + " in the last 10 incidents. Your categories are holding — good time to build the decision tree.";
+  }
+
+  var host = $("recordList");
+  host.innerHTML = "";
+  if(!records.length){
+    var blank = document.createElement("div");
+    blank.className = "blank";
+    blank.innerHTML = mascot("cosmetic", true) +
+      "No records yet. Log the next failure as it happens, not from memory at the end of the shift.";
+    host.appendChild(blank);
+    return;
+  }
+
+  records.forEach(function(r){
+    var card = document.createElement("div");
+    card.className = "rec";
+    card.setAttribute("data-a", r.acuity);
+
+    var face = document.createElement("div");
+    face.className = "face";
+    face.innerHTML = mascot(r.acuity, true);
+    card.appendChild(face);
+
+    var main = document.createElement("div");
+
+    var top = document.createElement("div");
+    top.className = "top";
+    var code = document.createElement("span");
+    code.className = "code";
+    code.textContent = ACUITY_LABEL[r.acuity] + " · " + (r.node_code || "UNCODED");
+    var when = document.createElement("span");
+    when.className = "when";
+    when.textContent = new Date(r.logged_at).toLocaleString() + (r.printer_id ? " · " + r.printer_id : "");
+    top.appendChild(code); top.appendChild(when);
+    main.appendChild(top);
+
+    var sym = document.createElement("p");
+    sym.className = "sym";
+    sym.textContent = r.symptom_text;
+    main.appendChild(sym);
+
+    var bits = [];
+    if(r.symptom_class) bits.push("Class: " + r.symptom_class);
+    if(r.checked_clear && r.checked_clear.length) bits.push("Ruled out: " + r.checked_clear.join("; "));
+    if(r.discriminating_test) bits.push("Decided by: " + r.discriminating_test);
+    if(r.minutes_to_resolve) bits.push(r.minutes_to_resolve + " min");
+    if(bits.length){
+      var meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = bits.join(" — ");
+      main.appendChild(meta);
+    }
+
+    var ver = document.createElement("div");
+    ver.className = "ver";
+    var vl = document.createElement("span");
+    vl.className = "vlbl";
+    vl.textContent = "Held for 3 prints?";
+    ver.appendChild(vl);
+
+    [["pending","Pending"],["held","Held"],["failed","Came back"]].forEach(function(pair){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "vbtn";
+      b.textContent = pair[1];
+      b.setAttribute("aria-pressed", r.verification === pair[0]);
+      b.addEventListener("click", async function(){
+        r.verification = pair[0];
+        await saveAll(records);
+        render();
+      });
+      ver.appendChild(b);
+    });
+
+    var del = document.createElement("button");
+    del.type = "button";
+    del.className = "vbtn del";
+    del.textContent = "Delete";
+    del.addEventListener("click", async function(){
+      if(!confirm("Delete " + r.id + "? This can't be undone.")) return;
+      records = records.filter(function(x){ return x.id !== r.id; });
+      await saveAll(records);
+      render();
+      toast("Deleted " + r.id);
+    });
+    ver.appendChild(del);
+
+    main.appendChild(ver);
+    card.appendChild(main);
+    host.appendChild(card);
+  });
+}
+
+/* ---------- export ---------- */
+var COLUMNS = ["id","logged_at","acuity","symptom_class","symptom_text","printer_id","printer_model",
+  "material","lot","nozzle_temp","bed_temp","layer_height","nozzle_size","hours_since_service",
+  "checked_clear","subsystem","fault_mode","node_code","rival_cause","discriminating_test",
+  "fix_applied","minutes_to_resolve","parts_used","tech","verification"];
+
+function csvCell(v){
+  if(v === undefined || v === null) v = "";
+  if(Array.isArray(v)) v = v.join("; ");
+  return '"' + String(v).replace(/"/g,'""') + '"';
+}
+function download(name, text, mime){
+  var blob = new Blob([text], {type:mime});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+function stamp(){ return new Date().toISOString().slice(0,10); }
+
+$("exportCsv").addEventListener("click", function(){
+  if(!records.length){ toast("Nothing to export yet"); return; }
+  var lines = [COLUMNS.join(",")];
+  records.forEach(function(r){ lines.push(COLUMNS.map(function(c){ return csvCell(r[c]); }).join(",")); });
+  download("printer-triage-" + stamp() + ".csv", "\ufeff" + lines.join("\r\n"), "text/csv;charset=utf-8");
+  toast("CSV exported");
+});
+$("exportJson").addEventListener("click", function(){
+  if(!records.length){ toast("Nothing to export yet"); return; }
+  download("printer-triage-" + stamp() + ".json",
+    JSON.stringify({exported_at:new Date().toISOString(), schema_version:1, records:records}, null, 2),
+    "application/json");
+  toast("JSON exported");
+});
+
+/* ---------- boot ---------- */
+(async function init(){
+  records = await loadAll();
+  $("storeState").textContent = persistent ? "saves between sessions" : "session only, export before closing";
+  $("mastFace").innerHTML = mascot("cosmetic", true);
+  buildStubs(); renderChips(); renderPresets(); updateCode(); render();
+})();
+
+})();
+</script>
+</body>
+</html>
