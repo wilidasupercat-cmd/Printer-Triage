@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>Raised Symptom Report — Intake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light only;
+  --bg:#EFEBFF;
+  --card:#FFFFFF;
+  --soft:#F7F5FF;
+  --ink:#2B2340;
+  --muted:#7A7194;
+  --violet:#6C5CE7;
+  --red:#FF5E5B;
+  --amber:#FFB020;
+  --green:#2FBF7E;
+  --shadow:4px 4px 0 var(--ink);
+  --shadow-sm:3px 3px 0 var(--ink);
+  --display:"Fredoka",system-ui,sans-serif;
+  --sans:"Nunito",system-ui,-apple-system,sans-serif;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{background:#EFEBFF}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(var(--card) 1.6px,transparent 1.7px);
+  background-size:22px 22px;
+  color:var(--ink);font-family:var(--sans);font-size:16px;font-weight:600;line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px 120px}
+
+header.mast{
+  display:flex;align-items:center;gap:16px;
+  background:var(--card);border:3px solid var(--ink);border-radius:22px;
+  box-shadow:var(--shadow);padding:16px 20px;margin:22px 0 18px;
+}
+header.mast svg{flex:0 0 auto;width:66px;height:66px}
+.mast h1{font-family:var(--display);font-weight:700;font-size:clamp(21px,5vw,31px);line-height:1.05;margin:0;color:var(--ink)}
+.mast h1 em{font-style:normal;color:var(--violet)}
+.mast .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px}
+@media (max-width:520px){header.mast{gap:12px;padding:14px 16px}header.mast svg{width:50px;height:50px}}
+
+nav.tabs{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+nav.tabs button{
+  appearance:none;cursor:pointer;font-family:var(--display);font-size:15px;font-weight:600;
+  padding:10px 20px;border-radius:999px;border:3px solid var(--ink);
+  background:var(--card);color:var(--ink);box-shadow:var(--shadow-sm);
+  transition:transform .1s ease,box-shadow .1s ease;
+}
+nav.tabs button[aria-selected="true"]{background:var(--violet);color:#fff}
+nav.tabs button:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+nav.tabs button:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+
+section.block{
+  background:var(--card);border:3px solid var(--ink);border-radius:22px;
+  box-shadow:var(--shadow);padding:20px 20px 22px;margin:0 0 20px;
+}
+.block>h2{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 4px}
+.block>h2 .idx{
+  flex:0 0 auto;width:31px;height:31px;border-radius:50%;
+  border:3px solid var(--ink);background:var(--soft);display:grid;place-items:center;
+  font-family:var(--display);font-size:14px;font-weight:700;
+}
+.block>h2 .col{
+  margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted);
+  border:2px solid var(--muted);border-radius:7px;padding:1px 7px;white-space:nowrap;
+}
+.block>.hint{font-size:14px;color:var(--muted);margin:0 0 15px;padding-left:42px}
+@media (max-width:560px){.block>.hint{padding-left:0}.block>h2 .col{display:none}}
+
+.row{display:grid;grid-template-columns:145px 1fr;gap:8px 16px;align-items:start;padding:7px 0}
+.row>label,.row>.lbl{font-family:var(--display);font-size:14px;font-weight:500;padding-top:12px}
+@media (max-width:620px){.row{grid-template-columns:1fr;gap:5px;padding:9px 0}.row>label,.row>.lbl{padding-top:0}}
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;font-family:var(--sans);font-size:15px;font-weight:600;color:var(--ink);
+  background:var(--soft);border:3px solid var(--ink);border-radius:14px;padding:11px 13px;
+}
+input::placeholder,textarea::placeholder{color:#A9A2C0;font-weight:600}
+textarea{resize:vertical;min-height:78px;line-height:1.45}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--violet);outline-offset:2px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media (max-width:560px){.trio{grid-template-columns:1fr 1fr}}
+
+/* preview strip */
+.preview{
+  background:#FFF0C7;border:3px solid var(--ink);border-radius:14px;
+  padding:11px 13px;margin-top:12px;font-family:var(--mono);font-size:12.5px;
+  line-height:1.55;white-space:pre-wrap;word-break:break-word;
+}
+.preview.empty{background:var(--soft);color:var(--muted)}
+
+/* chips + toggles */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;
+  background:#E7FBF1;border:3px solid var(--ink);border-radius:999px;padding:4px 6px 4px 13px;
+}
+.chip button{appearance:none;border:0;background:none;cursor:pointer;font-size:16px;line-height:1;color:var(--muted);padding:2px 4px}
+.chip button:hover{color:var(--red)}
+.chip.preset{cursor:pointer;background:var(--soft);color:var(--muted);border-style:dashed;padding:5px 13px;font-weight:600}
+.chip.preset:hover,.chip.preset:focus-visible{background:#E7FBF1;color:var(--ink);border-style:solid;outline:none}
+
+.grouplbl{font-family:var(--display);font-size:13px;color:var(--muted);margin:16px 0 8px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:640px){.acts{grid-template-columns:1fr}}
+.act{
+  display:flex;align-items:flex-start;gap:10px;
+  background:var(--soft);border:3px solid var(--ink);border-radius:14px;
+  padding:9px 12px;cursor:pointer;font-size:14px;line-height:1.35;
+}
+.act input{
+  appearance:none;flex:0 0 auto;width:20px;height:20px;margin:1px 0 0;
+  border:3px solid var(--ink);border-radius:6px;background:#fff;cursor:pointer;
+}
+.act input:checked{background:var(--green)}
+.act input:checked::after{content:"";display:block;width:5px;height:9px;margin:1px auto 0;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
+.act input:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.act:has(input:checked){background:#E7FBF1}
+.tools{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.tool{
+  appearance:none;cursor:pointer;font-family:var(--mono);font-size:11px;
+  border:2px solid var(--ink);background:#fff;color:var(--muted);border-radius:7px;padding:2px 7px;
+}
+.tool[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+/* buttons */
+.btn{
+  appearance:none;cursor:pointer;font-family:var(--display);font-size:16px;font-weight:600;
+  padding:12px 22px;border-radius:999px;border:3px solid var(--ink);
+  background:var(--violet);color:#fff;box-shadow:var(--shadow-sm);
+  transition:transform .1s ease,box-shadow .1s ease;
+}
+.btn.ghost{background:var(--card);color:var(--ink)}
+.btn.small{padding:9px 15px;font-size:14px}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+.actions{position:sticky;bottom:0;z-index:10;padding:14px 0 16px;display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+.actions::before{content:"";position:absolute;inset:-6px -16px 0;z-index:-1;background:linear-gradient(to top,var(--bg) 68%,rgba(239,235,255,0))}
+
+/* records */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--card);border:3px solid var(--ink);border-radius:18px;box-shadow:var(--shadow-sm);padding:14px 15px}
+.stat .n{font-family:var(--display);font-weight:700;font-size:29px;line-height:1}
+.stat .k{font-size:12px;font-weight:700;color:var(--muted);margin-top:5px}
+.exportbox{background:#FFF0C7;border:3px solid var(--ink);border-radius:18px;box-shadow:var(--shadow-sm);padding:15px 16px;margin-bottom:20px}
+.exportbox p{margin:0 0 12px;font-size:14px}
+.exportbox .btns{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.optline{font-size:13px;color:var(--muted);margin-top:11px;display:flex;align-items:center;gap:8px}
+.optline input{width:18px;height:18px;accent-color:var(--violet)}
+
+.rec{
+  background:var(--card);border:3px solid var(--ink);border-radius:20px;box-shadow:var(--shadow-sm);
+  padding:15px 16px;margin-bottom:13px;display:grid;grid-template-columns:48px 1fr;gap:14px;
+}
+.rec>.face{width:48px;height:48px}
+@media (max-width:520px){.rec{grid-template-columns:1fr}.rec>.face{width:42px;height:42px}}
+.rec .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.rec .pid{font-family:var(--mono);font-size:14px;font-weight:500;border:2px solid var(--ink);border-radius:8px;padding:2px 9px;background:var(--soft)}
+.rec .when{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.rec .st{margin:9px 0 0;font-size:14px;font-weight:800}
+.rec[data-s="resolved"] .st{color:#1E8A58}
+.rec[data-s="deferred"] .st{color:#B87400}
+.rec[data-s="escalated"] .st{color:#D0342F}
+.rec .meta{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.5}
+.rec .ctrls{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.vbtn{
+  appearance:none;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:700;
+  border:3px solid var(--ink);background:var(--soft);color:var(--ink);border-radius:999px;padding:5px 13px;
+}
+.vbtn.del{border-style:dashed;color:var(--muted)}
+.vbtn.del:hover{color:var(--red);border-color:var(--red)}
+.vbtn:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.blank{background:var(--card);border:3px dashed var(--ink);border-radius:22px;padding:30px 20px;text-align:center;color:var(--muted);font-size:15px}
+.blank svg{width:66px;height:66px;display:block;margin:0 auto 12px}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);
+  background:var(--ink);color:#fff;font-family:var(--display);font-size:15px;
+  padding:12px 22px;border-radius:999px;border:3px solid var(--ink);
+  opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;z-index:60;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hidden{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <span id="mastFace"></span>
+  <div>
+    <h1>Raised <em>Symptom Report</em></h1>
+    <div class="sub">9 columns, same order as the sheet · <span id="storeState">checking storage…</span></div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tabIntake" aria-selected="true">New entry</button>
+  <button role="tab" id="tabRecords" aria-selected="false">Rows <span id="recCount"></span></button>
+</nav>
+
+<div id="panelIntake">
+
+  <section class="block">
+    <h2><span class="idx">1</span> Printer, date, tech<span class="col">Printer · Date · Name</span></h2>
+    <p class="hint">Your name sticks between entries, so you only type it once per shift.</p>
+    <div class="row">
+      <label for="printer">Printer</label>
+      <div class="pair">
+        <input type="text" id="printer" placeholder="e.g. C47P07" autocapitalize="characters">
+        <input type="date" id="date">
+      </div>
+    </div>
+    <div class="row">
+      <label for="tech">Name</label>
+      <input type="text" id="tech" placeholder="Your name">
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">2</span> Symptom / flag<span class="col">Symptom / Flag</span></h2>
+    <p class="hint">Fill the numbers and the sentence writes itself in the house format — no more five techs phrasing the same flag five ways.</p>
+    <div class="row">
+      <label for="flagClass">Flag</label>
+      <select id="flagClass">
+        <option value="Class-2 Further Inspection Needed">Class-2 Further Inspection Needed</option>
+        <option value="">No class flag — describe it myself</option>
+      </select>
+    </div>
+    <div class="row">
+      <label for="repeatReason">Repeated issue</label>
+      <div class="pair">
+        <select id="repeatReason"><option value="">— none —</option></select>
+        <input type="number" id="repeatCount" min="2" placeholder="How many times">
+      </div>
+    </div>
+    <div class="row">
+      <label for="failStreak">Streak / rate</label>
+      <div class="trio">
+        <input type="number" id="failStreak" min="0" placeholder="Fail streak">
+        <input type="number" id="failRate" min="0" max="100" value="100" placeholder="Fail rate %">
+        <input type="number" id="interventions" min="0" placeholder="Prior fixes">
+      </div>
+    </div>
+    <div class="row">
+      <label for="symptomExtra">Printer said</label>
+      <textarea id="symptomExtra" placeholder="Paste any message the printer reported, or describe the symptom in your own words"></textarea>
+    </div>
+    <div class="preview empty" id="symptomPreview">Fill in the fields above and the flag sentence appears here.</div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">3</span> Failure history<span class="col">Failure History</span></h2>
+    <p class="hint">Pick a reason, set the count, add it. Totals compute themselves and feed the flag sentence above.</p>
+    <div class="row">
+      <label for="failReason">Add a fail</label>
+      <div class="pair">
+        <select id="failReason"></select>
+        <div style="display:flex;gap:9px">
+          <input type="number" id="failCount" min="1" value="1" style="width:88px">
+          <button type="button" class="btn ghost small" id="addFail" style="flex:1">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="row hidden" id="customFailRow">
+      <label for="customFail">New reason</label>
+      <input type="text" id="customFail" placeholder="Name the reason, lowercase-with-hyphens">
+    </div>
+    <div class="chips" id="failChips"></div>
+    <div class="preview empty" id="failPreview">No fails logged yet.</div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">4</span> Actions taken<span class="col">Actions Taken</span></h2>
+    <p class="hint">Tick what you did. They export numbered, in the standard order, worded identically every time.</p>
+    <div id="actionGroups"></div>
+    <div class="grouplbl">Anything else</div>
+    <div style="display:flex;gap:9px">
+      <input type="text" id="customAction" placeholder="Type a one-off action, hit Enter">
+      <button type="button" class="btn ghost small" id="addAction">Add</button>
+    </div>
+    <div class="chips" id="actionChips"></div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">5</span> Findings / notes<span class="col">Findings / Notes</span></h2>
+    <p class="hint">What you actually discovered — the root cause, the surprise, the thing the next tech needs to know. Blank is fine if there was nothing to report.</p>
+    <div class="row">
+      <label for="findings">Findings</label>
+      <textarea id="findings" placeholder="e.g. T-wipers were off; adjusted to correct height. Wiper station should sit at 110mm."></textarea>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="idx">6</span> Status &amp; next step<span class="col">Status · Next Step</span></h2>
+    <p class="hint">Pick the closest status and add detail after it. Consistent status text is what makes the master sheet filterable.</p>
+    <div class="row">
+      <label for="status">Status</label>
+      <select id="status"></select>
+    </div>
+    <div class="row">
+      <label for="statusDetail">Detail</label>
+      <input type="text" id="statusDetail" placeholder="Optional — e.g. T0 PP sensor recalibrated">
+    </div>
+    <div class="row">
+      <label for="nextStep">Next step</label>
+      <div>
+        <textarea id="nextStep" placeholder="Blank if nothing to follow up"></textarea>
+        <div class="chips" id="nextPresets"></div>
+      </div>
+    </div>
+    <div class="preview empty" id="statusPreview"></div>
+  </section>
+
+  <div class="actions">
+    <button type="button" class="btn" id="saveBtn">Save row</button>
+    <button type="button" class="btn ghost" id="clearForm">Clear form</button>
+  </div>
+</div>
+
+<div id="panelRecords" class="hidden">
+  <div class="stats">
+    <div class="stat"><div class="n" id="sTotal">0</div><div class="k">Rows this session</div></div>
+    <div class="stat"><div class="n" id="sResolved">0</div><div class="k">Resolved</div></div>
+    <div class="stat"><div class="n" id="sDeferred">0</div><div class="k">Deferred / open</div></div>
+    <div class="stat"><div class="n" id="sPrinters">0</div><div class="k">Printers touched</div></div>
+  </div>
+
+  <div class="exportbox">
+    <p><b>Copy for Sheets</b> puts every row on your clipboard, tab-separated, in the exact column order of the report. Click the first cell of an empty row in the Google Sheet and paste.</p>
+    <div class="btns">
+      <button type="button" class="btn small" id="copyTsv">Copy for Sheets</button>
+      <button type="button" class="btn ghost small" id="copyLast">Copy last row only</button>
+      <button type="button" class="btn ghost small" id="exportCsv">Download CSV</button>
+      <button type="button" class="btn ghost small" id="exportJson">Download JSON</button>
+    </div>
+    <label class="optline"><input type="checkbox" id="withHeader"> Include the header row when copying</label>
+    <label class="optline"><input type="checkbox" id="keepBreaks"> Keep real line breaks inside cells (CSV import only — breaks a direct paste)</label>
+  </div>
+
+  <div id="recordList"></div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+
+/* ---------------- mascot ---------------- */
+function mascot(mood){
+  var ink="#2B2340", top = mood==="resolved" ? "#2FBF7E" : mood==="escalated" ? "#FF5E5B" : "#FFB020", face;
+  if(mood==="escalated"){
+    face='<path d="M23 33 l6 6 M29 33 l-6 6" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>'+
+         '<path d="M35 33 l6 6 M41 33 l-6 6" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>'+
+         '<ellipse cx="32" cy="48" rx="5" ry="4" fill="'+ink+'"/>';
+  } else if(mood==="deferred"){
+    face='<circle cx="26" cy="36" r="3" fill="'+ink+'"/><circle cx="38" cy="36" r="3" fill="'+ink+'"/>'+
+         '<path d="M24 47 q4 -4 8 0 q4 4 8 0" stroke="'+ink+'" stroke-width="3" stroke-linecap="round" fill="none"/>';
+  } else {
+    face='<circle cx="26" cy="35" r="3" fill="'+ink+'"/><circle cx="38" cy="35" r="3" fill="'+ink+'"/>'+
+         '<path d="M25 44 q7 8 14 0" stroke="'+ink+'" stroke-width="3" stroke-linecap="round" fill="none"/>';
+  }
+  return '<svg viewBox="0 0 64 64" aria-hidden="true">'+
+    '<rect x="6" y="16" width="52" height="42" rx="13" fill="#fff" stroke="'+ink+'" stroke-width="3"/>'+
+    '<path d="M6 29 h52" stroke="'+ink+'" stroke-width="3"/>'+
+    '<path d="M9 16 h46 a10 10 0 0 1 3 7 v6 h-52 v-6 a10 10 0 0 1 3 -7z" fill="'+top+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'+
+    '<rect x="28" y="6" width="8" height="10" rx="3" fill="'+top+'" stroke="'+ink+'" stroke-width="3"/>'+face+'</svg>';
+}
+
+/* ---------------- vocabularies ---------------- */
+var FAIL_REASONS=["no-extrusion-t0","no-extrusion-t1","no-extrusion-t2","no-extrusion-t3","under-extrusion",
+"filament-runout-t0","filament-runout-t1","filament-runout-t2","blobs-oozing-hole-mesh","curling-heel-collar",
+"curling-rest-of-shoe","first-layer-adhesion","first-layer-adhesion-major","lost-shoe","support-scar",
+"printejection-failed","short-print","test-print","calibration-failed","tool-pick-fail","hardware-fail",
+"ghost-stop","untracked-stop","klipper-issue","lost-mcu-communication","no-mcu-connected",
+"usb-communication-failed","finishing","other"];
+
+var ACTION_GROUPS=[
+ {name:"Calibration",items:[
+   {id:"zcal",text:"Completed Z-cal"},
+   {id:"mesh",text:"Completed bed-mesh cal"},
+   {id:"xycal",text:"Completed XY-cal"},
+   {id:"zmax",text:"Checked Z-max"},
+   {id:"aical",text:"Ran AI camera calibration"}]},
+ {name:"Extrusion & filament",items:[
+   {id:"extest",text:"Extrusion test",tools:true},
+   {id:"exsample",text:"Ran extrusion sample test"},
+   {id:"filcheck",text:"Checked filament levels"},
+   {id:"filrefill",text:"Refilled filament"},
+   {id:"filfeed",text:"Verified filament fed into toolhead properly"}]},
+ {name:"Toolhead & tools",items:[
+   {id:"nozcheck",text:"Checked nozzles"},
+   {id:"nozclean",text:"Cleaned nozzles"},
+   {id:"nozrep",text:"Replaced nozzle",tools:true},
+   {id:"heatbreak",text:"Replaced heatbreak tubing / PTFE",tools:true},
+   {id:"toolbank",text:"Checked tool-bank alignment / retaught tool positions if necessary"},
+   {id:"toolpick",text:"Ran tool pick test"}]},
+ {name:"Push-pull & electronics",items:[
+   {id:"pprecal",text:"Re-calibrated PP systems"},
+   {id:"ppcycle",text:"Power-cycled PP motor"},
+   {id:"fwrestart",text:"Power cycle / firmware restart"},
+   {id:"grabber",text:"Grabber reset"},
+   {id:"ppboards",text:"Replaced PP main / auxiliary boards"}]},
+ {name:"Mechanical",items:[
+   {id:"fasteners",text:"Verified fasteners / mating surfaces flush & torqued (incl. touch-off points)"},
+   {id:"wipers",text:"Adjusted T-wipers"},
+   {id:"wiperstn",text:"Adjusted wiper station height"},
+   {id:"cables",text:"Re-managed cables and tubing for the toolheads"},
+   {id:"bedclean",text:"Cleaned bed"},
+   {id:"loadcell",text:"Replaced load cell spring"},
+   {id:"latch",text:"Shimmed door latch"}]}
+];
+
+var STATUSES=[
+ {v:"RESOLVED — returned to production",m:"resolved"},
+ {v:"RESOLVED — passed calibrations; returned to production",m:"resolved"},
+ {v:"RESOLVED — verified printing correctly; pushed through",m:"resolved"},
+ {v:"RESOLVED — hardware replaced",m:"resolved"},
+ {v:"RESOLVED — returned to normal maintenance queue",m:"resolved"},
+ {v:"OPEN / DEFERRED — could not service (printer mid-print)",m:"deferred"},
+ {v:"OPEN / DEFERRED — returned to maintenance queue",m:"deferred"},
+ {v:"ESCALATED — needs senior tech oversight",m:"escalated"}
+];
+
+var NEXT_PRESETS=["Continue to monitor after return to production.",
+ "Revisit for full service once the unit is free.",
+ "No dedicated follow-up needed — returns to normal maintenance queue.",
+ "Confirm on next print that the fix holds."];
+
+/* ---------------- storage ---------------- */
+var KEY="rsr:rows", TECHKEY="rsr:tech", mem={}, persistent=!!(window.storage&&window.storage.get);
+async function sGet(k){ if(!persistent) return mem[k]; try{var r=await window.storage.get(k,false);return r?r.value:undefined;}catch(e){return undefined;} }
+async function sSet(k,v){ if(!persistent){mem[k]=v;return true;} try{await window.storage.set(k,v,false);return true;}catch(e){mem[k]=v;return false;} }
+
+var rows=[], fails=[], customActions=[], toolSel={};
+
+/* ---------------- toast ---------------- */
+var tTimer;
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tTimer);tTimer=setTimeout(function(){t.classList.remove("show");},2300);}
+
+/* ---------------- tabs ---------------- */
+function tab(which){
+  var i=which==="intake";
+  $("tabIntake").setAttribute("aria-selected",i);
+  $("tabRecords").setAttribute("aria-selected",!i);
+  $("panelIntake").classList.toggle("hidden",!i);
+  $("panelRecords").classList.toggle("hidden",i);
+  window.scrollTo(0,0);
+}
+$("tabIntake").addEventListener("click",function(){tab("intake");});
+$("tabRecords").addEventListener("click",function(){tab("records");renderRows();});
+
+/* ---------------- build selects ---------------- */
+function fillReasons(){
+  var a=$("failReason"), b=$("repeatReason");
+  FAIL_REASONS.forEach(function(r){
+    a.appendChild(new Option(r,r));
+    b.appendChild(new Option(r,r));
+  });
+  a.appendChild(new Option("+ new reason…","__custom"));
+}
+function fillStatuses(){
+  var s=$("status");
+  s.appendChild(new Option("— pick one —",""));
+  STATUSES.forEach(function(o){ s.appendChild(new Option(o.v,o.v)); });
+}
+
+/* ---------------- symptom composer ---------------- */
+function totalFails(){ return fails.reduce(function(n,f){return n+f.count;},0); }
+function distinctReasons(){ return fails.length; }
+
+function symptomText(){
+  var parts=[];
+  var rr=$("repeatReason").value, rc=parseInt($("repeatCount").value,10);
+  if(rr&&rc>1) parts.push(rc+"\u00d7 same issue: "+rr);
+  var tf=totalFails(), dr=distinctReasons();
+  if(tf) parts.push(tf+" fails across "+dr+" reason"+(dr===1?"":"s"));
+  var fr=$("failRate").value;
+  if(fr!==""&&tf) parts.push(fr+"% fail rate over "+tf+" classified prints");
+  var fs=parseInt($("failStreak").value,10);
+  if(fs>0) parts.push("current fail streak of "+fs);
+  var iv=parseInt($("interventions").value,10);
+  if(iv>0) parts.push("failed again after "+iv+" recent intervention"+(iv===1?"":"s"));
+
+  var cls=$("flagClass").value;
+  var line = cls ? (parts.length ? cls+" \u2014 "+parts.join("; ")+"." : cls) : parts.join("; ")+(parts.length?".":"");
+  var extra=$("symptomExtra").value.trim();
+  if(extra) line = line ? line+" "+extra : extra;
+  return line.trim();
+}
+function failText(){
+  if(!fails.length) return "";
+  return totalFails()+" fails: "+fails.map(function(f){return f.count+"x "+f.reason;}).join("; ")+".";
+}
+function statusText(){
+  var s=$("status").value, d=$("statusDetail").value.trim();
+  if(!s) return "";
+  return d ? s+"; "+d : s;
+}
+function refresh(){
+  var sp=$("symptomPreview"), st=symptomText();
+  sp.textContent = st || "Fill in the fields above and the flag sentence appears here.";
+  sp.classList.toggle("empty",!st);
+
+  var fp=$("failPreview"), ft=failText();
+  fp.textContent = ft || "No fails logged yet.";
+  fp.classList.toggle("empty",!ft);
+
+  var stp=$("statusPreview"), stt=statusText();
+  stp.textContent = stt || "Pick a status to see how it will read in the sheet.";
+  stp.classList.toggle("empty",!stt);
+
+  var mood=moodOf(stt);
+  $("mastFace").innerHTML=mascot(mood);
+}
+function moodOf(s){
+  if(!s) return "deferred";
+  if(s.indexOf("RESOLVED")===0) return "resolved";
+  if(s.indexOf("ESCALATED")===0) return "escalated";
+  return "deferred";
+}
+["flagClass","repeatReason","repeatCount","failStreak","failRate","interventions","symptomExtra","status","statusDetail"]
+ .forEach(function(id){ $(id).addEventListener("input",refresh); $(id).addEventListener("change",refresh); });
+
+/* ---------------- fails ---------------- */
+$("failReason").addEventListener("change",function(){
+  var custom=$("failReason").value==="__custom";
+  $("customFailRow").classList.toggle("hidden",!custom);
+  if(custom) $("customFail").focus();
+});
+function renderFails(){
+  var host=$("failChips"); host.innerHTML="";
+  fails.forEach(function(f,i){
+    var s=document.createElement("span"); s.className="chip";
+    s.appendChild(document.createTextNode(f.count+"x "+f.reason));
+    var x=document.createElement("button"); x.type="button"; x.textContent="\u00d7";
+    x.setAttribute("aria-label","Remove "+f.reason);
+    x.addEventListener("click",function(){fails.splice(i,1);renderFails();refresh();});
+    s.appendChild(x); host.appendChild(s);
+  });
+}
+$("addFail").addEventListener("click",function(){
+  var r=$("failReason").value;
+  if(r==="__custom") r=$("customFail").value.trim().toLowerCase().replace(/\s+/g,"-");
+  if(!r){ toast("Pick a reason first"); return; }
+  var c=Math.max(1,parseInt($("failCount").value,10)||1);
+  var ex=fails.filter(function(f){return f.reason===r;})[0];
+  if(ex) ex.count+=c; else fails.push({reason:r,count:c});
+  fails.sort(function(a,b){return b.count-a.count;});
+  $("failCount").value=1; $("customFail").value=""; $("customFailRow").classList.add("hidden");
+  $("failReason").value=FAIL_REASONS[0];
+  renderFails(); refresh();
+});
+
+/* ---------------- actions ---------------- */
+function renderActions(){
+  var host=$("actionGroups"); host.innerHTML="";
+  ACTION_GROUPS.forEach(function(g){
+    var lbl=document.createElement("div"); lbl.className="grouplbl"; lbl.textContent=g.name;
+    host.appendChild(lbl);
+    var grid=document.createElement("div"); grid.className="acts";
+    g.items.forEach(function(it){
+      var wrap=document.createElement("label"); wrap.className="act";
+      var cb=document.createElement("input"); cb.type="checkbox"; cb.id="act_"+it.id;
+      var txt=document.createElement("span");
+      txt.appendChild(document.createTextNode(it.text));
+      wrap.appendChild(cb); wrap.appendChild(txt);
+      if(it.tools){
+        var tw=document.createElement("span"); tw.className="tools";
+        ["T0","T1","T2","T3"].forEach(function(t){
+          var b=document.createElement("button"); b.type="button"; b.className="tool"; b.textContent=t;
+          b.setAttribute("aria-pressed", !!(toolSel[it.id]&&toolSel[it.id].indexOf(t)>-1));
+          b.addEventListener("click",function(e){
+            e.preventDefault();
+            toolSel[it.id]=toolSel[it.id]||[];
+            var k=toolSel[it.id].indexOf(t);
+            if(k>-1) toolSel[it.id].splice(k,1); else toolSel[it.id].push(t);
+            toolSel[it.id].sort();
+            b.setAttribute("aria-pressed",toolSel[it.id].indexOf(t)>-1);
+            if(toolSel[it.id].length) cb.checked=true;
+          });
+          tw.appendChild(b);
+        });
+        txt.appendChild(tw);
+      }
+      grid.appendChild(wrap);
+    });
+    host.appendChild(grid);
+  });
+}
+function actionList(){
+  var out=[];
+  ACTION_GROUPS.forEach(function(g){
+    g.items.forEach(function(it){
+      var cb=$("act_"+it.id);
+      if(cb&&cb.checked){
+        var t=it.text;
+        if(it.tools&&toolSel[it.id]&&toolSel[it.id].length) t+=" on "+toolSel[it.id].join("/");
+        out.push(t);
+      }
+    });
+  });
+  return out.concat(customActions);
+}
+function renderCustomActions(){
+  var host=$("actionChips"); host.innerHTML="";
+  customActions.forEach(function(a,i){
+    var s=document.createElement("span"); s.className="chip";
+    s.appendChild(document.createTextNode(a));
+    var x=document.createElement("button"); x.type="button"; x.textContent="\u00d7";
+    x.setAttribute("aria-label","Remove "+a);
+    x.addEventListener("click",function(){customActions.splice(i,1);renderCustomActions();});
+    s.appendChild(x); host.appendChild(s);
+  });
+}
+function addCustomAction(){
+  var v=$("customAction").value.trim();
+  if(!v) return;
+  customActions.push(v); $("customAction").value=""; renderCustomActions();
+}
+$("addAction").addEventListener("click",addCustomAction);
+$("customAction").addEventListener("keydown",function(e){ if(e.key==="Enter"){e.preventDefault();addCustomAction();} });
+
+/* ---------------- next-step presets ---------------- */
+function renderNextPresets(){
+  var host=$("nextPresets"); host.innerHTML="";
+  NEXT_PRESETS.forEach(function(p){
+    var b=document.createElement("button"); b.type="button"; b.className="chip preset";
+    b.textContent="+ "+p.replace(/\.$/,"");
+    b.addEventListener("click",function(){
+      var t=$("nextStep");
+      t.value = t.value.trim() ? t.value.trim()+" "+p : p;
+    });
+    host.appendChild(b);
+  });
+}
+
+/* ---------------- save ---------------- */
+function numberedActions(list){
+  return list.map(function(a,i){ return (i+1)+". "+a; });
+}
+$("saveBtn").addEventListener("click",async function(){
+  var printer=$("printer").value.trim().toUpperCase();
+  if(!printer){ toast("Printer ID first"); $("printer").focus(); return; }
+  var acts=actionList();
+  var row={
+    id:"R"+Date.now().toString(36).toUpperCase(),
+    printer:printer,
+    date:$("date").value,
+    symptom:symptomText(),
+    failure_history:failText(),
+    actions:numberedActions(acts),
+    findings:$("findings").value.trim(),
+    status:statusText(),
+    next_step:$("nextStep").value.trim(),
+    name:$("tech").value.trim()
+  };
+  rows.unshift(row);
+  var ok=await sSet(KEY,JSON.stringify(rows));
+  await sSet(TECHKEY,row.name);
+  toast(ok?"Saved "+printer:"Saved for this session only");
+  resetForm(true);
+  renderRows();
+});
+
+function resetForm(keepHeader){
+  fails=[]; customActions=[]; toolSel={};
+  ["symptomExtra","findings","nextStep","statusDetail","customAction","customFail","repeatCount","failStreak","interventions"]
+    .forEach(function(id){ $(id).value=""; });
+  $("failRate").value="100";
+  $("repeatReason").value=""; $("status").value=""; $("flagClass").value="Class-2 Further Inspection Needed";
+  if(!keepHeader){ $("printer").value=""; }
+  else { $("printer").value=""; }
+  $("customFailRow").classList.add("hidden");
+  document.querySelectorAll('input[id^="act_"]').forEach(function(cb){cb.checked=false;});
+  renderActions(); renderFails(); renderCustomActions(); refresh();
+  window.scrollTo(0,0);
+}
+$("clearForm").addEventListener("click",function(){ if(confirm("Clear this form?")) resetForm(true); });
+
+/* ---------------- rows view ---------------- */
+function renderRows(){
+  $("recCount").textContent=rows.length?"("+rows.length+")":"";
+  var res=0,def=0,pr={};
+  rows.forEach(function(r){
+    var m=moodOf(r.status);
+    if(m==="resolved") res++; else def++;
+    if(r.printer) pr[r.printer]=1;
+  });
+  $("sTotal").textContent=rows.length;
+  $("sResolved").textContent=res;
+  $("sDeferred").textContent=def;
+  $("sPrinters").textContent=Object.keys(pr).length;
+
+  var host=$("recordList"); host.innerHTML="";
+  if(!rows.length){
+    var b=document.createElement("div"); b.className="blank";
+    b.innerHTML=mascot("resolved")+"No rows yet. Log each printer as you finish it, then copy the lot into the sheet at the end of the pass.";
+    host.appendChild(b); return;
+  }
+  rows.forEach(function(r){
+    var mood=moodOf(r.status);
+    var card=document.createElement("div"); card.className="rec"; card.setAttribute("data-s",mood);
+    var f=document.createElement("div"); f.className="face"; f.innerHTML=mascot(mood); card.appendChild(f);
+    var main=document.createElement("div");
+
+    var top=document.createElement("div"); top.className="top";
+    var pid=document.createElement("span"); pid.className="pid"; pid.textContent=r.printer;
+    var when=document.createElement("span"); when.className="when";
+    when.textContent=(r.date||"")+(r.name?" · "+r.name:"");
+    top.appendChild(pid); top.appendChild(when); main.appendChild(top);
+
+    var st=document.createElement("p"); st.className="st"; st.textContent=r.status||"No status set"; main.appendChild(st);
+
+    var bits=[];
+    if(r.failure_history) bits.push(r.failure_history);
+    if(r.actions.length) bits.push(r.actions.length+" actions logged");
+    if(r.findings) bits.push("Findings: "+r.findings);
+    if(bits.length){
+      var m=document.createElement("div"); m.className="meta"; m.textContent=bits.join(" — "); main.appendChild(m);
+    }
+
+    var c=document.createElement("div"); c.className="ctrls";
+    var copy=document.createElement("button"); copy.type="button"; copy.className="vbtn"; copy.textContent="Copy row";
+    copy.addEventListener("click",function(){ copyText(rowToTsv(r)); toast("Row copied"); });
+    var del=document.createElement("button"); del.type="button"; del.className="vbtn del"; del.textContent="Delete";
+    del.addEventListener("click",async function(){
+      if(!confirm("Delete the row for "+r.printer+"?")) return;
+      rows=rows.filter(function(x){return x.id!==r.id;});
+      await sSet(KEY,JSON.stringify(rows)); renderRows(); toast("Deleted");
+    });
+    c.appendChild(copy); c.appendChild(del); main.appendChild(c);
+    card.appendChild(main); host.appendChild(card);
+  });
+}
+
+/* ---------------- export ---------------- */
+var HEADERS=["Printer","Date","Symptom / Flag","Failure History","Actions Taken","Findings / Notes","Status","Next Step","Name"];
+
+function actionsCell(r,multiline){
+  if(!r.actions.length) return "";
+  return multiline ? r.actions.join("\n") : r.actions.join("  ");
+}
+function rowValues(r,multiline){
+  return [r.printer,r.date,r.symptom,r.failure_history,actionsCell(r,multiline),r.findings,r.status,r.next_step,r.name];
+}
+function clean(v){ return String(v||"").replace(/\t/g," ").replace(/\r/g,""); }
+function rowToTsv(r){
+  return rowValues(r,false).map(function(v){ return clean(v).replace(/\n/g,"  "); }).join("\t");
+}
+function allTsv(){
+  var lines=[];
+  if($("withHeader").checked) lines.push(HEADERS.join("\t"));
+  rows.slice().reverse().forEach(function(r){ lines.push(rowToTsv(r)); });
+  return lines.join("\n");
+}
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).catch(function(){ fallbackCopy(t); });
+  } else fallbackCopy(t);
+}
+function fallbackCopy(t){
+  var ta=document.createElement("textarea");
+  ta.value=t; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{document.execCommand("copy");}catch(e){}
+  document.body.removeChild(ta);
+}
+$("copyTsv").addEventListener("click",function(){
+  if(!rows.length){ toast("Nothing to copy yet"); return; }
+  copyText(allTsv());
+  toast(rows.length+" row"+(rows.length===1?"":"s")+" copied");
+});
+$("copyLast").addEventListener("click",function(){
+  if(!rows.length){ toast("Nothing to copy yet"); return; }
+  copyText(rowToTsv(rows[0])); toast("Last row copied");
+});
+
+function csvCell(v){ return '"'+String(v||"").replace(/"/g,'""')+'"'; }
+function download(name,text,mime){
+  var b=new Blob([text],{type:mime}), u=URL.createObjectURL(b), a=document.createElement("a");
+  a.href=u; a.download=name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(u);},1000);
+}
+$("exportCsv").addEventListener("click",function(){
+  if(!rows.length){ toast("Nothing to export yet"); return; }
+  var ml=$("keepBreaks").checked;
+  var lines=[HEADERS.map(csvCell).join(",")];
+  rows.slice().reverse().forEach(function(r){
+    lines.push(rowValues(r,ml).map(csvCell).join(","));
+  });
+  download("raised-symptom-report-"+(new Date().toISOString().slice(0,10))+".csv","\ufeff"+lines.join("\r\n"),"text/csv;charset=utf-8");
+  toast("CSV downloaded");
+});
+$("exportJson").addEventListener("click",function(){
+  if(!rows.length){ toast("Nothing to export yet"); return; }
+  download("raised-symptom-report-"+(new Date().toISOString().slice(0,10))+".json",
+    JSON.stringify({exported_at:new Date().toISOString(),columns:HEADERS,rows:rows.slice().reverse()},null,2),"application/json");
+  toast("JSON downloaded");
+});
+
+/* ---------------- boot ---------------- */
+(async function init(){
+  fillReasons(); fillStatuses(); renderActions(); renderNextPresets();
+  $("date").value=new Date().toISOString().slice(0,10);
+  var raw=await sGet(KEY);
+  try{ rows=raw?JSON.parse(raw):[]; }catch(e){ rows=[]; }
+  var t=await sGet(TECHKEY); if(t) $("tech").value=t;
+  $("storeState").textContent=persistent?"saves between sessions":"session only, copy before closing";
+  renderFails(); renderCustomActions(); refresh(); renderRows();
+})();
+})();
+</script>
+</body>
+</html>
